@@ -24,12 +24,6 @@ type Tick struct {
 	tasks []*Task
 }
 
-func NewTick() *Tick {
-	return &Tick{
-		tasks: make([]*Task, 0),
-	}
-}
-
 func (t *Tick) register(task *Task) {
 	t.tasks = append(t.tasks, task)
 }

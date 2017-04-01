@@ -21,7 +21,7 @@ func TestTaskMethodDoneShouldBeOpening(t *testing.T) {
 }
 
 func TestTickMethodRegisterAppendTaskSucceed(t *testing.T) {
-	tick := NewTick()
+	tick := &Tick{tasks: make([]*Task, 0)}
 
 	tick.register(newTask(1))
 
