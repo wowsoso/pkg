@@ -61,9 +61,7 @@ type Breaker struct {
 	buckets        []bucket
 	recoveryBucket bucket
 	state          uint8
-	active         bool
 	c              chan uint8
-	recoverChan    chan bool
 	ctx            context.Context
 	cancelFunc     context.CancelFunc
 
@@ -77,12 +75,11 @@ func NewBreaker(metricsOptions MetricsOptions, _isOpen func([]bucket) uint8, _is
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
 	b := &Breaker{
-		buckets:     make([]bucket, metricsOptions.metricsRollingCount),
-		state:       CLOSED,
-		c:           make(chan uint8),
-		recoverChan: make(chan bool),
-		ctx:         ctx,
-		cancelFunc:  cancelFunc,
+		buckets:    make([]bucket, metricsOptions.metricsRollingCount),
+		state:      CLOSED,
+		c:          make(chan uint8),
+		ctx:        ctx,
+		cancelFunc: cancelFunc,
 
 		MetricsOptions: metricsOptions,
 	}
