@@ -2,6 +2,7 @@ package breaker
 
 import (
 	"context"
+	// "fmt"
 	"sync"
 	"time"
 )
@@ -48,11 +49,11 @@ func (b *bucket) all() int {
 }
 
 type MetricsOptions struct {
-	metricsRollingCount uint8
-	metricsInterval     time.Duration
-	receiveInterval     time.Duration
-	updateStateInterval time.Duration
-	recoverInterval     time.Duration
+	MetricsRollingCount uint8
+	MetricsInterval     time.Duration
+	ReceiveInterval     time.Duration
+	UpdateStateInterval time.Duration
+	RecoverInterval     time.Duration
 }
 
 type Breaker struct {
@@ -75,7 +76,7 @@ func NewBreaker(metricsOptions MetricsOptions, _isOpen func([]bucket) uint8, _is
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
 	b := &Breaker{
-		buckets:    make([]bucket, metricsOptions.metricsRollingCount),
+		buckets:    make([]bucket, metricsOptions.MetricsRollingCount),
 		state:      CLOSED,
 		c:          make(chan uint8),
 		ctx:        ctx,
@@ -86,6 +87,28 @@ func NewBreaker(metricsOptions MetricsOptions, _isOpen func([]bucket) uint8, _is
 
 	b.isOpen = _isOpen
 	b.isClosed = _isClosed
+
+	go b.Start()
+	return b
+}
+
+func NewBreakerWithDefault(metricsOptions MetricsOptions) *Breaker {
+	ctx, cancelFunc := context.WithCancel(context.Background())
+
+	b := &Breaker{
+		buckets:    make([]bucket, metricsOptions.MetricsRollingCount),
+		state:      CLOSED,
+		c:          make(chan uint8),
+		ctx:        ctx,
+		cancelFunc: cancelFunc,
+
+		MetricsOptions: metricsOptions,
+	}
+
+	b.isOpen = IsOpen
+	b.isClosed = IsClosed
+
+	go b.Start()
 
 	return b
 }
@@ -106,20 +129,24 @@ func (b *Breaker) recovery(tick *time.Ticker) {
 
 func (b *Breaker) setStateClosed() {
 	b.state = CLOSED
+	for i := 0; i < int(b.MetricsRollingCount); i++ {
+		b.buckets[i].reset()
+	}
 }
 
 func (b *Breaker) setStateOpen() {
 	b.state = OPEN
 
-	for i := 0; i < int(b.metricsRollingCount); i++ {
+	for i := 0; i < int(b.MetricsRollingCount); i++ {
 		b.buckets[i].reset()
 	}
 
-	go b.recovery(time.NewTicker(1 * time.Millisecond))
+	go b.recovery(time.NewTicker(b.RecoverInterval))
 }
 
 func (b *Breaker) setStateHalfOpen() {
 	b.state = HALFOPEN
+	b.recoveryBucket.reset()
 }
 
 func (b *Breaker) changeState(state uint) {
@@ -155,10 +182,10 @@ func (b *Breaker) receiving(tick *time.Ticker) {
 			tick.Stop()
 			return
 		case <-tick.C:
-			b.buckets[b.metricsRollingCount-1].succeed += succeed
-			b.buckets[b.metricsRollingCount-1].failed += failed
-			b.buckets[b.metricsRollingCount-1].timeout += timeout
-			b.buckets[b.metricsRollingCount-1].reject += reject
+			b.buckets[b.MetricsRollingCount-1].succeed += succeed
+			b.buckets[b.MetricsRollingCount-1].failed += failed
+			b.buckets[b.MetricsRollingCount-1].timeout += timeout
+			b.buckets[b.MetricsRollingCount-1].reject += reject
 			succeed, failed, timeout, reject = 0, 0, 0, 0
 			b.recoveryBucket.succeed += rsucceed
 			b.recoveryBucket.failed += rfailed
@@ -203,6 +230,7 @@ func (b *Breaker) updateState(tick *time.Ticker) {
 			tick.Stop()
 			return
 		case <-tick.C:
+			// fmt.Println(b.buckets, b.recoveryBucket, b.state)
 			state := b.state
 			switch state {
 			case OPEN:
@@ -238,10 +266,10 @@ func (b *Breaker) Active() bool {
 }
 
 func (b *Breaker) Start() {
-	go b.receiving(time.NewTicker(b.receiveInterval))
-	go b.updateState(time.NewTicker(b.updateStateInterval))
+	go b.receiving(time.NewTicker(b.ReceiveInterval))
+	go b.updateState(time.NewTicker(b.UpdateStateInterval))
 
-	tick := time.NewTicker(b.metricsInterval)
+	tick := time.NewTicker(b.MetricsInterval)
 
 	for {
 		select {
@@ -249,10 +277,10 @@ func (b *Breaker) Start() {
 			tick.Stop()
 			return
 		case <-tick.C:
-			for i := 0; i < int(b.metricsRollingCount)-1; i++ {
+			for i := 0; i < int(b.MetricsRollingCount)-1; i++ {
 				b.buckets[i] = b.buckets[i+1]
 			}
-			b.buckets[b.metricsRollingCount-1].reset()
+			b.buckets[b.MetricsRollingCount-1].reset()
 		}
 	}
 }

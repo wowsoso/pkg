@@ -22,11 +22,11 @@ func TestBucketMethodReset(t *testing.T) {
 
 func TestBreaker(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	NewBreaker(metricsOptions, IsOpen, IsClosed)
@@ -34,15 +34,14 @@ func TestBreaker(t *testing.T) {
 
 func TestBreakerMethodchangeStateWhenClosed2Open(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
-	b := NewBreaker(metricsOptions, IsOpen, IsClosed)
-	// go b.recovering(1 * time.Millisecond)
+	b := NewBreakerWithDefault(metricsOptions)
 
 	b.state = CLOSED
 	b.buckets[0].succeed = 1
@@ -53,7 +52,7 @@ func TestBreakerMethodchangeStateWhenClosed2Open(t *testing.T) {
 		t.Fatalf("state should be open, got: %v", b.state)
 	}
 
-	for i := 0; i < int(b.metricsRollingCount); i++ {
+	for i := 0; i < int(b.MetricsRollingCount); i++ {
 		if (b.buckets[i].succeed + b.buckets[i].failed + b.buckets[i].timeout + b.buckets[i].reject) != 0 {
 			t.Fatal("set state open should be reset all bucket")
 		}
@@ -63,15 +62,14 @@ func TestBreakerMethodchangeStateWhenClosed2Open(t *testing.T) {
 
 func TestBreakerMethodchangeStateWhenOpen2HalfOpen(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b := NewBreaker(metricsOptions, IsOpen, IsClosed)
-	// go b.recovering(1 * time.Millisecond)
 
 	b.state = OPEN
 	b.changeState(HALFOPEN)
@@ -83,15 +81,14 @@ func TestBreakerMethodchangeStateWhenOpen2HalfOpen(t *testing.T) {
 
 func TestBreakerMethodchangeStateWhenHalfOpen2Open(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b := NewBreaker(metricsOptions, IsOpen, IsClosed)
-	// go b.recovering(1 * time.Millisecond)
 
 	b.state = HALFOPEN
 	b.changeState(OPEN)
@@ -103,15 +100,14 @@ func TestBreakerMethodchangeStateWhenHalfOpen2Open(t *testing.T) {
 
 func TestBreakerMethodchangeStateWhenHalfOpen2Closed(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b := NewBreaker(metricsOptions, IsOpen, IsClosed)
-	// go b.recovering(1 * time.Millisecond)
 
 	b.state = HALFOPEN
 	b.changeState(CLOSED)
@@ -123,11 +119,11 @@ func TestBreakerMethodchangeStateWhenHalfOpen2Closed(t *testing.T) {
 
 func TestBreakerMethodReceiving(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b := NewBreaker(metricsOptions, IsOpen, IsClosed)
@@ -156,11 +152,11 @@ func TestBreakerMethodReceiving(t *testing.T) {
 	}
 
 	metricsOptions = MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b = NewBreaker(metricsOptions, IsOpen, IsClosed)
@@ -189,11 +185,11 @@ func TestBreakerMethodReceiving(t *testing.T) {
 
 func TestBreakerMethodUpdateState(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b := NewBreaker(metricsOptions, func([]bucket) uint8 { return TRUE }, IsClosed)
@@ -211,11 +207,11 @@ func TestBreakerMethodUpdateState(t *testing.T) {
 	}
 
 	metricsOptions = MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b = NewBreaker(metricsOptions, func([]bucket) uint8 { return HOLD }, IsClosed)
@@ -233,11 +229,11 @@ func TestBreakerMethodUpdateState(t *testing.T) {
 	}
 
 	metricsOptions = MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b = NewBreaker(metricsOptions, IsOpen, func(bucket) uint8 { return HOLD })
@@ -256,11 +252,11 @@ func TestBreakerMethodUpdateState(t *testing.T) {
 	}
 
 	metricsOptions = MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b = NewBreaker(metricsOptions, IsOpen, func(bucket) uint8 { return TRUE })
@@ -279,11 +275,11 @@ func TestBreakerMethodUpdateState(t *testing.T) {
 	}
 
 	metricsOptions = MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b = NewBreaker(metricsOptions, IsOpen, func(bucket) uint8 { return FALSE })
@@ -302,11 +298,11 @@ func TestBreakerMethodUpdateState(t *testing.T) {
 	}
 
 	metricsOptions = MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b = NewBreaker(metricsOptions, IsOpen, func(bucket) uint8 { return FALSE })
@@ -336,11 +332,11 @@ func TestBreakerMethodUpdateState(t *testing.T) {
 
 func TestBreakerMethodChan(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b := NewBreaker(metricsOptions, func([]bucket) uint8 { return TRUE }, IsClosed)
@@ -360,11 +356,11 @@ func TestBreakerMethodChan(t *testing.T) {
 
 func TestBreakerMethodActive(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b := NewBreaker(metricsOptions, func([]bucket) uint8 { return TRUE }, IsClosed)
@@ -390,11 +386,11 @@ func TestBreakerMethodActive(t *testing.T) {
 
 func TestBreakerMethodRecovery(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1 * time.Second,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1 * time.Second,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b := NewBreaker(metricsOptions, func([]bucket) uint8 { return TRUE }, IsClosed)
@@ -422,11 +418,11 @@ func TestBreakerMethodRecovery(t *testing.T) {
 
 func TestBreakerMethodStart(t *testing.T) {
 	metricsOptions := MetricsOptions{
-		metricsRollingCount: 5,
-		metricsInterval:     1,
-		receiveInterval:     1 * time.Second,
-		updateStateInterval: 1 * time.Second,
-		recoverInterval:     5 * time.Second,
+		MetricsRollingCount: 5,
+		MetricsInterval:     1,
+		ReceiveInterval:     1 * time.Second,
+		UpdateStateInterval: 1 * time.Second,
+		RecoverInterval:     5 * time.Second,
 	}
 
 	b := NewBreaker(metricsOptions, func([]bucket) uint8 { return TRUE }, IsClosed)
