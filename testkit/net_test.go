@@ -13,6 +13,6 @@ func TestGetIdleLocalPort(t *testing.T) {
 	}
 
 	if GetIdleLocalPort("127.0.0.1", 1, 8000) == 0 {
-		t.Fatalf("result should be not 0")
+		t.Fatalf("result should be more than 0")
 	}
 }
