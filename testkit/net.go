@@ -11,8 +11,9 @@ func GetIdleLocalPort(host string, from, to int) int {
 	}
 
 	for port := from; port <= to; port++ {
-		_, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
+		listen, err := net.Listen("tcp", fmt.Sprintf("%s:%d", host, port))
 		if err == nil {
+			listen.Close()
 			return port
 		}
 	}
